@@ -3,6 +3,8 @@ namespace App\Controllers;
 
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use App\Models\Project;
+use App\Models\Column;
 
 class ProjectController
 {
@@ -10,29 +12,14 @@ class ProjectController
     {
         $project = [
             'id' => $projectId,
-            'name' => 'Projet Alpha',
+            'name' => 'Projet inconnu',
         ];
-        $kanban = [
-            [
-                'title' => 'À faire',
-                'tasks' => [
-                    ['title' => 'Préparer la réunion', 'description' => 'Organiser la réunion de lancement'],
-                    ['title' => 'Créer le repo Git', 'description' => 'Initialiser le dépôt du projet'],
-                ]
-            ],
-            [
-                'title' => 'En cours',
-                'tasks' => [
-                    ['title' => "Développer la page d'accueil", 'description' => 'Coder la vue principale'],
-                ]
-            ],
-            [
-                'title' => 'Terminé',
-                'tasks' => [
-                    ['title' => 'Définir le cahier des charges', 'description' => 'Document validé par le client'],
-                ]
-            ]
-        ];
+        // Charger le projet depuis la BDD si possible
+        $projectObj = Project::find($projectId);
+        if ($projectObj) {
+            $project['name'] = $projectObj->name;
+        }
+        $kanban = Column::allByProject($projectId);
         $loader = new FilesystemLoader(__DIR__ . '/../Views/templates');
         $twig = new Environment($loader);
         echo $twig->render('project.html.twig', [

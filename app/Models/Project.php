@@ -30,4 +30,20 @@ class Project
         }
         return $projects;
     }
+
+    public static function find($id)
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('SELECT * FROM projects WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        if ($row) {
+            $project = new self();
+            $project->id = $row['id'];
+            $project->name = $row['name'];
+            $project->description = $row['description'];
+            return $project;
+        }
+        return null;
+    }
 } 

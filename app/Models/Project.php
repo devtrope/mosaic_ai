@@ -1,14 +1,33 @@
 <?php
 namespace App\Models;
 
+use App\Core\Database;
+
 class Project
 {
+    public $id;
     public $name;
     public $description;
 
-    public function __construct($name, $description)
+    public function __construct($name = null, $description = null)
     {
         $this->name = $name;
         $this->description = $description;
+    }
+
+    public static function all()
+    {
+        $pdo = Database::getInstance()->getConnection();
+        $stmt = $pdo->query('SELECT * FROM projects ORDER BY id DESC');
+        $results = $stmt->fetchAll();
+        $projects = [];
+        foreach ($results as $row) {
+            $project = new self();
+            $project->id = $row['id'];
+            $project->name = $row['name'];
+            $project->description = $row['description'];
+            $projects[] = $project;
+        }
+        return $projects;
     }
 } 

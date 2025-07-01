@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ project.name }} - Kanban{% endblock %}
+
+{% block content %}
+<div class="asana-layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/assets/images/mosaic-logo.png" alt="Logo Mosaic" style="height: 40px;">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/">Accueil</a></li>
+                <li class="active"><span>Projets</span></li>
+                <li><span>Tâches</span></li>
+                <li><span>Favoris</span></li>
+            </ul>
+        </nav>
+    </aside>
+    <section class="main-content">
+        <header class="main-header">
+            <h2>{{ project.name }}</h2>
+            <div class="header-actions">
+                <input type="text" placeholder="Rechercher..." class="search-bar">
+                <div class="avatar"></div>
+            </div>
+        </header>
+        <div class="kanban-board">
+            {% for column in kanban %}
+                <div class="kanban-column">
+                    <h3>{{ column.title }}</h3>
+                    <div class="kanban-tasks">
+                        {% for task in column.tasks %}
+                            <div class="kanban-task">
+                                <strong>{{ task.title }}</strong>
+                                <p>{{ task.description }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %} 

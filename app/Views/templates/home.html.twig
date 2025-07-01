@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Mosaic AI{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+    {% for project in projects %}
+        <div style="background: #f4f5f7; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 1.5rem; min-width: 250px; max-width: 300px;">
+            <h2 style="margin-top: 0; color: #172b4d;">{{ project.name }}</h2>
+            <p style="color: #5e6c84;">{{ project.description }}</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %} 

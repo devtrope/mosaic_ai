@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <title>{% block title %}Mosaic AI{% endblock %}</title>
     <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="icon" type="image/png" href="/assets/images/mosaic.png">
 </head>
 <body>
-    <header>
-        <h1>Mosaic AI</h1>
+    <header style="display: flex; align-items: center; gap: 1rem;">
+        <img src="/assets/images/mosaic-logo.png" alt="Logo Mosaic" style="height: 48px;">
+        <h1 style="margin: 0;">Mosaic AI</h1>
     </header>
     <main>
         {% block content %}{% endblock %}

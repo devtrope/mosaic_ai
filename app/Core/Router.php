@@ -5,6 +5,14 @@ class Router
 {
     public function dispatch()
     {
-        // Logique de routage à implémenter
+        // Simple routage pour la page d'accueil
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        if ($uri === '/' || $uri === '/index.php') {
+            $controller = new \App\Controllers\HomeController();
+            $controller->index();
+        } else {
+            http_response_code(404);
+            echo 'Page non trouvée';
+        }
     }
 } 

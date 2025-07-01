@@ -3,12 +3,39 @@
 {% block title %}Accueil - Mosaic AI{% endblock %}
 
 {% block content %}
-<div style="display: flex; flex-wrap: wrap; gap: 2rem;">
-    {% for project in projects %}
-        <div style="background: #f4f5f7; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 1.5rem; min-width: 250px; max-width: 300px;">
-            <h2 style="margin-top: 0; color: #172b4d;">{{ project.name }}</h2>
-            <p style="color: #5e6c84;">{{ project.description }}</p>
+<div class="asana-layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/assets/images/mosaic-logo.png" alt="Logo Mosaic" style="height: 40px;">
         </div>
-    {% endfor %}
+        <nav>
+            <ul>
+                <li class="active"><span>Accueil</span></li>
+                <li><span>Projets</span></li>
+                <li><span>Tâches</span></li>
+                <li><span>Favoris</span></li>
+            </ul>
+        </nav>
+    </aside>
+    <section class="main-content">
+        <header class="main-header">
+            <h2>Mes projets</h2>
+            <div class="header-actions">
+                <input type="text" placeholder="Rechercher..." class="search-bar">
+                <div class="avatar"></div>
+            </div>
+        </header>
+        <div class="projects-list">
+            {% for project in projects %}
+                <div class="project-card">
+                    <div class="project-icon"></div>
+                    <div>
+                        <h3>{{ project.name }}</h3>
+                        <p>{{ project.description }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
 </div>
 {% endblock %} 

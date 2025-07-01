@@ -1,0 +1,116 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7f8fa;
+}
+.asana-layout {
+    display: flex;
+    min-height: 100vh;
+}
+.sidebar {
+    background: #23272f;
+    color: #fff;
+    width: 220px;
+    padding: 2rem 1rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+.sidebar-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sidebar nav ul li {
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.sidebar nav ul li.active, .sidebar nav ul li:hover {
+    background: #353b48;
+}
+.main-content {
+    flex: 1;
+    padding: 2rem 3rem;
+    display: flex;
+    flex-direction: column;
+}
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.main-header h2 {
+    margin: 0;
+    font-size: 2rem;
+    color: #23272f;
+}
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+.search-bar {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid #e0e0e0;
+    outline: none;
+    font-size: 1rem;
+    background: #fff;
+}
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6a82fb 0%, #fc5c7d 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.projects-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+.project-card {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 1.5rem 1.2rem;
+    min-width: 220px;
+    max-width: 260px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+}
+.project-card:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.13);
+}
+.project-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    margin-right: 0.5rem;
+}
+.project-card h3 {
+    margin: 0 0 0.3rem 0;
+    font-size: 1.15rem;
+    color: #23272f;
+}
+.project-card p {
+    margin: 0;
+    color: #444;
+    font-size: 0.97rem;
+} 

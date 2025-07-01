@@ -2,6 +2,60 @@
 
 {% block title %}Accueil - Mosaic AI{% endblock %}
 
+{% block head %}
+    <style>
+    .project-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0; top: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.3);
+        align-items: center;
+        justify-content: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+        background: #fff;
+        border-radius: 12px;
+        padding: 2rem 2.5rem;
+        min-width: 320px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+        position: relative;
+    }
+    .modal-content h2 { margin-top: 0; }
+    .close-modal {
+        position: absolute;
+        right: 1rem; top: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    .modal-content input, .modal-content textarea {
+        width: 100%;
+        margin-bottom: 1rem;
+        padding: 0.7rem;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        font-size: 1rem;
+    }
+    .modal-content button[type="submit"] {
+        background: #23272f;
+        color: #fff;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+    </style>
+{% endblock %}
+
 {% block content %}
 <div class="asana-layout">
     <aside class="sidebar">
@@ -21,21 +75,49 @@
         <header class="main-header">
             <h2>Mes projets</h2>
             <div class="header-actions">
+                <button id="openModalBtn" style="background: #43e97b; color: #fff; border: none; border-radius: 6px; padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer;">Nouveau projet</button>
                 <input type="text" placeholder="Rechercher..." class="search-bar">
                 <div class="avatar"></div>
             </div>
         </header>
         <div class="projects-list">
             {% for project in projects %}
-                <div class="project-card">
-                    <div class="project-icon"></div>
-                    <div>
-                        <h3>{{ project.name }}</h3>
-                        <p>{{ project.description }}</p>
+                <a href="/project/{{ project.id }}" class="project-card-link">
+                    <div class="project-card">
+                        <div class="project-icon"></div>
+                        <div>
+                            <h3>{{ project.name }}</h3>
+                            <p>{{ project.description }}</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             {% endfor %}
         </div>
     </section>
 </div>
+
+<div class="modal" id="projectModal">
+    <div class="modal-content">
+        <button class="close-modal" id="closeModalBtn">&times;</button>
+        <h2>Nouveau projet</h2>
+        <form method="post" action="/">
+            <input type="text" name="name" placeholder="Nom du projet" required>
+            <textarea name="description" placeholder="Description" rows="3"></textarea>
+            <button type="submit">Créer</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modal = document.getElementById('projectModal');
+        if (openModalBtn && closeModalBtn && modal) {
+            openModalBtn.onclick = () => modal.classList.add('active');
+            closeModalBtn.onclick = () => modal.classList.remove('active');
+            window.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+        }
+    });
+</script>
 {% endblock %} 

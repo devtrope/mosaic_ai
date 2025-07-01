@@ -46,4 +46,12 @@ class Project
         }
         return null;
     }
+
+    public static function create($name, $description)
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('INSERT INTO projects (name, description) VALUES (?, ?)');
+        $stmt->execute([$name, $description]);
+        return $pdo->lastInsertId();
+    }
 } 

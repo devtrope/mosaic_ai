@@ -15,6 +15,7 @@ if (!isset($data['column_id'], $data['title'])) {
 $column_id = (int)$data['column_id'];
 $title = trim($data['title']);
 $description = isset($data['description']) ? trim($data['description']) : '';
+$labels = isset($data['labels']) && is_array($data['labels']) ? $data['labels'] : [];
 
 $db = Database::getInstance()->getConnection();
 
@@ -29,5 +30,23 @@ $stmt = $db->prepare('INSERT INTO tasks (column_id, title, description, position
 $stmt->execute([$column_id, $title, $description, $position]);
 $taskId = $db->lastInsertId();
 
-$task = [ 'id' => $taskId, 'title' => $title, 'description' => $description ];
+// Associer les labels
+if (!empty($labels)) {
+    $insert = $db->prepare('INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)');
+    foreach ($labels as $labelId) {
+        $insert->execute([$taskId, $labelId]);
+    }
+}
+
+// Récupérer les labels de la tâche (nom + couleur)
+$labelsData = [];
+if (!empty($labels)) {
+    $in = implode(',', array_fill(0, count($labels), '?'));
+    $sql = "SELECT id, name, color FROM labels WHERE id IN ($in)";
+    $stmt = $db->prepare($sql);
+    $stmt->execute($labels);
+    $labelsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+$task = [ 'id' => $taskId, 'title' => $title, 'description' => $description, 'labels' => $labelsData ];
 echo json_encode(['success' => true, 'task' => $task]); 

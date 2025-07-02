@@ -230,7 +230,7 @@
             <textarea name="edit_task_description" id="edit_task_description" placeholder="Description" rows="3"></textarea>
             <div style="margin-bottom:1rem;">
                 <strong>Libellés :</strong><br>
-                <div class="edit-labels-list">
+                <div class="edit-labels-list" id="editLabelsList">
                     {% for label in labels %}
                         <label class="edit-label-item">
                             <input type="checkbox" name="edit_task_labels[]" value="{{ label.id }}" class="edit-task-label-checkbox" data-label-id="{{ label.id }}">
@@ -238,8 +238,13 @@
                         </label>
                     {% endfor %}
                 </div>
+                <form id="addLabelForm" style="display:flex; gap:0.5rem; align-items:center; margin-top:0.7rem;">
+                    <input type="text" id="newLabelName" placeholder="Nom du libellé" required style="padding:0.3rem 0.7rem; border-radius:6px; border:1px solid #e0e0e0;">
+                    <input type="color" id="newLabelColor" value="#43e97b" style="width:2.2rem; height:2.2rem; border:none;">
+                    <button type="button" id="addLabelBtn" style="background:#23272f; color:#fff; border:none; border-radius:6px; padding:0.4rem 1rem; cursor:pointer;">Ajouter</button>
+                </form>
             </div>
-            <button type="submit">Enregistrer</button>
+            <button type="button" id="editTaskFormBtn">Enregistrer</button>
         </form>
     </div>
 </div>
@@ -365,6 +370,7 @@
         const editModal = document.getElementById('editTaskModal');
         const closeEditBtn = document.getElementById('closeEditTaskModal');
         const editForm = document.getElementById('editTaskForm');
+        const editFormBtn = document.getElementById('editTaskFormBtn');
         document.querySelectorAll('.kanban-task').forEach(taskElem => {
             taskElem.addEventListener('click', function(e) {
                 if (e.target.classList.contains('add-task-btn')) return;
@@ -382,6 +388,164 @@
         });
         closeEditBtn.onclick = () => editModal.classList.remove('active');
         window.onclick = (e) => { if (e.target === editModal) editModal.classList.remove('active'); };
+
+        // Ajout dynamique de libellé
+        const addLabelForm = document.getElementById('addLabelForm');
+        const addLabelBtn = document.getElementById('addLabelBtn');
+        addLabelBtn.onclick = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('newLabelName').value.trim();
+            const color = document.getElementById('newLabelColor').value;
+            const projectId = {{ project.id }};
+            if (!name) return;
+            fetch('/api/label/add.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, color, project_id: projectId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Ajouter le label à la liste
+                    const list = document.getElementById('editLabelsList');
+                    const label = document.createElement('label');
+                    label.className = 'edit-label-item';
+                    label.innerHTML = `<input type="checkbox" name="edit_task_labels[]" value="${data.label.id}" class="edit-task-label-checkbox" data-label-id="${data.label.id}" checked>
+                        <span class="task-label" style="background: ${data.label.color}; color: #fff;">${data.label.name}</span>`;
+                    list.appendChild(label);
+                    document.getElementById('newLabelName').value = '';
+                    document.getElementById('newLabelColor').value = '#43e97b';
+                } else {
+                    alert(data.error || 'Erreur lors de l\'ajout du libellé.');
+                }
+            })
+            .catch(() => alert('Erreur lors de l\'ajout du libellé.'));
+        };
+
+        // Soumission AJAX du formulaire d'édition de tâche
+        editTaskFormBtn.onclick = function(e) {
+            e.preventDefault();
+            const taskId = document.getElementById('edit_task_id').value;
+            const title = document.getElementById('edit_task_title').value.trim();
+            const description = document.getElementById('edit_task_description').value.trim();
+            const labels = Array.from(document.querySelectorAll('.edit-task-label-checkbox:checked')).map(cb => cb.value);
+            fetch('/api/task/edit.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: taskId, title, description, labels })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour le DOM de la tâche
+                    const taskElem = document.querySelector('.kanban-task[data-task="' + taskId + '"]');
+                    if (taskElem) {
+                        taskElem.setAttribute('data-title', title);
+                        taskElem.setAttribute('data-description', description);
+                        taskElem.setAttribute('data-labels', labels.join(','));
+                        taskElem.querySelector('strong').textContent = title;
+                        taskElem.querySelector('p').textContent = description;
+                        // Mettre à jour les badges
+                        const labelsDiv = taskElem.querySelector('.task-labels');
+                        labelsDiv.innerHTML = '';
+                        data.labels.forEach(label => {
+                            const span = document.createElement('span');
+                            span.className = 'task-label';
+                            span.style.background = label.color;
+                            span.style.color = '#fff';
+                            span.textContent = label.name;
+                            labelsDiv.appendChild(span);
+                        });
+                    }
+                    document.getElementById('editTaskModal').classList.remove('active');
+                } else {
+                    alert(data.error || 'Erreur lors de la modification de la tâche.');
+                }
+            })
+            .catch(() => alert('Erreur lors de la modification de la tâche.'));
+        };
+
+        // Soumission AJAX du formulaire d'ajout de colonne
+        const addColumnModal = document.getElementById('addColumnModal');
+        if (addColumnModal) {
+            const addColForm = addColumnModal.querySelector('form');
+            addColForm.onsubmit = function(e) {
+                e.preventDefault();
+                const title = addColForm.querySelector('input[name="column_title"]').value.trim();
+                if (!title) return;
+                fetch('/api/column/add.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ project_id: {{ project.id }}, title })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.column) {
+                        // Créer dynamiquement la colonne dans le DOM
+                        const board = document.querySelector('.kanban-board');
+                        const colDiv = document.createElement('div');
+                        colDiv.className = 'kanban-column';
+                        colDiv.setAttribute('data-column', data.column.id);
+                        colDiv.innerHTML = `
+                            <h3>${data.column.title}</h3>
+                            <div class="kanban-tasks"></div>
+                            <button class="add-task-btn" data-column="${data.column.id}">+ Nouvelle tâche</button>
+                        `;
+                        board.insertBefore(colDiv, document.getElementById('openAddColumnModal'));
+                        addColForm.reset();
+                        addColumnModal.classList.remove('active');
+                    } else {
+                        alert(data.error || 'Erreur lors de la création de la colonne.');
+                    }
+                })
+                .catch(() => alert('Erreur lors de la création de la colonne.'));
+            };
+        }
+
+        // Soumission AJAX des formulaires d'ajout de tâche (un par colonne)
+        document.querySelectorAll('.modal[id^="addTaskModal-"]').forEach(modal => {
+            const form = modal.querySelector('form');
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const columnId = form.querySelector('input[name="task_column_id"]').value;
+                const title = form.querySelector('input[name="task_title"]').value.trim();
+                const description = form.querySelector('textarea[name="task_description"]').value.trim();
+                if (!title) return;
+                fetch('/api/task/add.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ column_id: columnId, title, description })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.task) {
+                        // Ajouter dynamiquement la tâche dans la colonne
+                        const colDiv = document.querySelector('.kanban-column[data-column="' + columnId + '"] .kanban-tasks');
+                        if (colDiv) {
+                            const taskElem = document.createElement('div');
+                            taskElem.className = 'kanban-task';
+                            taskElem.setAttribute('draggable', 'true');
+                            taskElem.setAttribute('data-task', data.task.id);
+                            taskElem.setAttribute('data-column', columnId);
+                            taskElem.setAttribute('data-title', data.task.title);
+                            taskElem.setAttribute('data-description', data.task.description);
+                            taskElem.setAttribute('data-labels', '');
+                            taskElem.innerHTML = `
+                                <div class="task-labels"></div>
+                                <strong>${data.task.title}</strong>
+                                <p>${data.task.description}</p>
+                            `;
+                            colDiv.appendChild(taskElem);
+                        }
+                        form.reset();
+                        modal.classList.remove('active');
+                    } else {
+                        alert(data.error || 'Erreur lors de la création de la tâche.');
+                    }
+                })
+                .catch(() => alert('Erreur lors de la création de la tâche.'));
+            };
+        });
     });
 </script>
 {% endblock %} 

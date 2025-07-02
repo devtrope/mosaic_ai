@@ -118,6 +118,47 @@
             closeModalBtn.onclick = () => modal.classList.remove('active');
             window.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
         }
+        // Soumission AJAX du formulaire d'ajout de projet
+        const projectModal = document.getElementById('projectModal');
+        if (projectModal) {
+            const form = projectModal.querySelector('form');
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const name = form.querySelector('input[name="name"]').value.trim();
+                const description = form.querySelector('textarea[name="description"]').value.trim();
+                if (!name) return;
+                fetch('/api/project/add.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.project) {
+                        // Ajouter dynamiquement la carte projet
+                        const list = document.querySelector('.projects-list');
+                        const a = document.createElement('a');
+                        a.href = '/project/' + data.project.id;
+                        a.className = 'project-card-link';
+                        a.innerHTML = `
+                            <div class="project-card">
+                                <div class="project-icon"></div>
+                                <div>
+                                    <h3>${data.project.name}</h3>
+                                    <p>${data.project.description}</p>
+                                </div>
+                            </div>
+                        `;
+                        list.appendChild(a);
+                        form.reset();
+                        projectModal.classList.remove('active');
+                    } else {
+                        alert(data.error || 'Erreur lors de la création du projet.');
+                    }
+                })
+                .catch(() => alert('Erreur lors de la création du projet.'));
+            };
+        }
     });
 </script>
 {% endblock %} 

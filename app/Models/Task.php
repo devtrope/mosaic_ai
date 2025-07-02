@@ -41,4 +41,21 @@ class Task
         $stmt->execute([$columnId, $title, $description, $pos]);
         return $pdo->lastInsertId();
     }
+
+    public static function update($id, $title, $desc, $labels)
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+        $pdo->beginTransaction();
+        $stmt = $pdo->prepare('UPDATE tasks SET title = ?, description = ? WHERE id = ?');
+        $stmt->execute([$title, $desc, $id]);
+        // Mettre à jour les libellés
+        $pdo->prepare('DELETE FROM task_labels WHERE task_id = ?')->execute([$id]);
+        if (!empty($labels)) {
+            $stmt = $pdo->prepare('INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)');
+            foreach ($labels as $labelId) {
+                $stmt->execute([$id, $labelId]);
+            }
+        }
+        $pdo->commit();
+    }
 } 

@@ -24,4 +24,19 @@ class Label
         }
         return $labels;
     }
+
+    public static function all()
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+        $stmt = $pdo->query('SELECT * FROM labels ORDER BY name');
+        $labels = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $label = new self();
+            $label->id = $row['id'];
+            $label->name = $row['name'];
+            $label->color = $row['color'];
+            $labels[] = $label;
+        }
+        return $labels;
+    }
 } 

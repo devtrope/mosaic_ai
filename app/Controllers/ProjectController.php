@@ -6,6 +6,7 @@ use Twig\Loader\FilesystemLoader;
 use App\Models\Project;
 use App\Models\Column;
 use App\Models\Task;
+use App\Models\Label;
 
 class ProjectController
 {
@@ -31,6 +32,16 @@ class ProjectController
                 exit;
             }
         }
+        // Modification d'une tâche en POST
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_task_id'])) {
+            $taskId = (int)$_POST['edit_task_id'];
+            $title = trim($_POST['edit_task_title']);
+            $desc = trim($_POST['edit_task_description'] ?? '');
+            $labels = isset($_POST['edit_task_labels']) ? $_POST['edit_task_labels'] : [];
+            Task::update($taskId, $title, $desc, $labels);
+            header('Location: /project/' . $projectId);
+            exit;
+        }
         $project = [
             'id' => $projectId,
             'name' => 'Projet inconnu',
@@ -41,11 +52,14 @@ class ProjectController
             $project['name'] = $projectObj->name;
         }
         $kanban = Column::allByProject($projectId);
+        // Charger tous les libellés pour l'édition
+        $labels = Label::all();
         $loader = new FilesystemLoader(__DIR__ . '/../Views/templates');
         $twig = new Environment($loader);
         echo $twig->render('project.html.twig', [
             'project' => $project,
-            'kanban' => $kanban
+            'kanban' => $kanban,
+            'labels' => $labels
         ]);
     }
 } 

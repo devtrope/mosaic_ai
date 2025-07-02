@@ -39,4 +39,20 @@ class Label
         }
         return $labels;
     }
+
+    public static function allByProject($projectId)
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('SELECT * FROM labels WHERE project_id IS NULL OR project_id = ? ORDER BY name');
+        $stmt->execute([$projectId]);
+        $labels = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $label = new self();
+            $label->id = $row['id'];
+            $label->name = $row['name'];
+            $label->color = $row['color'];
+            $labels[] = $label;
+        }
+        return $labels;
+    }
 } 

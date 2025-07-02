@@ -53,7 +53,7 @@ class ProjectController
         }
         $kanban = Column::allByProject($projectId);
         // Charger tous les libellés pour l'édition
-        $labels = Label::all();
+        $labels = Label::allByProject($projectId);
         $loader = new FilesystemLoader(__DIR__ . '/../Views/templates');
         $twig = new Environment($loader);
         echo $twig->render('project.html.twig', [

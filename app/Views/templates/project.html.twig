@@ -37,6 +37,18 @@
         background: #43e97b;
         color: #fff;
     }
+    .kanban-task[draggable="true"] {
+        cursor: grab;
+        opacity: 1;
+        transition: box-shadow 0.15s, transform 0.15s, opacity 0.2s;
+    }
+    .kanban-task.dragging {
+        opacity: 0.5;
+    }
+    .kanban-column.drop-hover {
+        background: #e0ffe6;
+        transition: background 0.2s;
+    }
     .modal {
         display: none;
         position: fixed;
@@ -109,11 +121,11 @@
         </header>
         <div class="kanban-board">
             {% for column in kanban %}
-                <div class="kanban-column">
+                <div class="kanban-column" data-column="{{ column.id }}">
                     <h3>{{ column.title }}</h3>
                     <div class="kanban-tasks">
                         {% for task in column.tasks %}
-                            <div class="kanban-task">
+                            <div class="kanban-task" draggable="true" data-task="{{ task.id }}" data-column="{{ column.id }}">
                                 <strong>{{ task.title }}</strong>
                                 <p>{{ task.description }}</p>
                             </div>
@@ -185,6 +197,55 @@
             modal.onclick = function(e) {
                 if (e.target === modal) modal.classList.remove('active');
             };
+        });
+
+        // Drag & Drop full JS
+        let draggedTaskId = null;
+        document.querySelectorAll('.kanban-task[draggable="true"]').forEach(task => {
+            task.addEventListener('dragstart', function(e) {
+                draggedTaskId = task.getAttribute('data-task');
+                task.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', draggedTaskId);
+            });
+            task.addEventListener('dragend', function() {
+                draggedTaskId = null;
+                task.classList.remove('dragging');
+            });
+        });
+        document.querySelectorAll('.kanban-column').forEach(col => {
+            col.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                col.classList.add('drop-hover');
+            });
+            col.addEventListener('dragleave', function() {
+                col.classList.remove('drop-hover');
+            });
+            col.addEventListener('drop', function(e) {
+                e.preventDefault();
+                col.classList.remove('drop-hover');
+                const taskId = e.dataTransfer.getData('text/plain');
+                if (taskId) {
+                    const targetColId = col.getAttribute('data-column');
+                    // Appel AJAX pour déplacer la tâche
+                    fetch('/api/task/move.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ task_id: taskId, column_id: targetColId })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Déplacer la tâche dans le DOM
+                            const taskElem = document.querySelector('.kanban-task[data-task="' + taskId + '"]');
+                            if (taskElem) col.querySelector('.kanban-tasks').appendChild(taskElem);
+                        } else {
+                            alert('Erreur lors du déplacement de la tâche.');
+                        }
+                    })
+                    .catch(() => alert('Erreur lors du déplacement de la tâche.'));
+                }
+            });
         });
     });
 </script>

@@ -10,6 +10,7 @@ class Task
     public $title;
     public $description;
     public $position;
+    public $labels;
 
     public static function allByColumn($columnId)
     {
@@ -24,6 +25,7 @@ class Task
             $task->title = $row['title'];
             $task->description = $row['description'];
             $task->position = $row['position'];
+            $task->labels = \App\Models\Label::allByTask($task->id);
             $tasks[] = $task;
         }
         return $tasks;

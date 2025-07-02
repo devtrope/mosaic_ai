@@ -112,7 +112,22 @@
 {% endblock %}
 
 {% block content %}
-{% set static_labels = ['Urgent', 'Bug', 'À valider'] %}
+{% set label_defs = {
+    'feature': {'name': 'feature', 'color': '#3498db'},
+    'bug': {'name': 'bug', 'color': '#e74c3c'},
+    'enhancement': {'name': 'enhancement', 'color': '#43e97b'}
+} %}
+{# Simulation dynamique : associer des libellés à chaque tâche selon son id #}
+{% set task_labels = {} %}
+{% for column in kanban %}
+    {% for task in column.tasks %}
+        {% set _ = task_labels.update({ (task.id): (
+            task.id % 3 == 1 ? ['feature'] :
+            task.id % 3 == 2 ? ['bug', 'enhancement'] :
+            ['enhancement']
+        ) }) %}
+    {% endfor %}
+{% endfor %}
 <div class="asana-layout">
     <aside class="sidebar">
         <div class="sidebar-logo">
@@ -143,8 +158,8 @@
                         {% for task in column.tasks %}
                             <div class="kanban-task" draggable="true" data-task="{{ task.id }}" data-column="{{ column.id }}">
                                 <div class="task-labels">
-                                    {% for label in static_labels %}
-                                        <span class="task-label">{{ label }}</span>
+                                    {% for label in task.labels %}
+                                        <span class="task-label" style="background: {{ label.color }}; color: #fff;">{{ label.name }}</span>
                                     {% endfor %}
                                 </div>
                                 <strong>{{ task.title }}</strong>

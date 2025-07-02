@@ -108,6 +108,18 @@
         font-weight: 600;
         display: inline-block;
     }
+    .edit-labels-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .edit-label-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
     </style>
 {% endblock %}
 
@@ -218,12 +230,14 @@
             <textarea name="edit_task_description" id="edit_task_description" placeholder="Description" rows="3"></textarea>
             <div style="margin-bottom:1rem;">
                 <strong>Libellés :</strong><br>
-                {% for label in all_labels %}
-                    <label style="margin-right:1rem;">
-                        <input type="checkbox" name="edit_task_labels[]" value="{{ label.id }}" class="edit-task-label-checkbox" data-label-id="{{ label.id }}">
-                        <span class="task-label" style="background: {{ label.color }}; color: #fff;">{{ label.name }}</span>
-                    </label>
-                {% endfor %}
+                <div class="edit-labels-list">
+                    {% for label in labels %}
+                        <label class="edit-label-item">
+                            <input type="checkbox" name="edit_task_labels[]" value="{{ label.id }}" class="edit-task-label-checkbox" data-label-id="{{ label.id }}">
+                            <span class="task-label" style="background: {{ label.color }}; color: #fff;">{{ label.name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
             </div>
             <button type="submit">Enregistrer</button>
         </form>
@@ -359,7 +373,7 @@
                 document.getElementById('edit_task_title').value = taskElem.getAttribute('data-title');
                 document.getElementById('edit_task_description').value = taskElem.getAttribute('data-description');
                 // Libellés
-                const checkedLabels = (taskElem.getAttribute('data-labels')||'').split(',');
+                const checkedLabels = (taskElem.getAttribute('data-labels')||'').split(',').filter(Boolean);
                 document.querySelectorAll('.edit-task-label-checkbox').forEach(cb => {
                     cb.checked = checkedLabels.includes(cb.value);
                 });

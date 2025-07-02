@@ -28,4 +28,15 @@ class Column
         }
         return $columns;
     }
+
+    public static function create($projectId, $title)
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('SELECT IFNULL(MAX(position),0)+1 AS pos FROM columns WHERE project_id = ?');
+        $stmt->execute([$projectId]);
+        $pos = $stmt->fetchColumn();
+        $stmt = $pdo->prepare('INSERT INTO columns (project_id, title, position) VALUES (?, ?, ?)');
+        $stmt->execute([$projectId, $title, $pos]);
+        return $pdo->lastInsertId();
+    }
 } 

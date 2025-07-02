@@ -10,6 +10,15 @@ class ProjectController
 {
     public function show($projectId)
     {
+        // Création d'une colonne en POST
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['column_title'])) {
+            $title = trim($_POST['column_title']);
+            if ($title) {
+                Column::create($projectId, $title);
+                header('Location: /project/' . $projectId);
+                exit;
+            }
+        }
         $project = [
             'id' => $projectId,
             'name' => 'Projet inconnu',

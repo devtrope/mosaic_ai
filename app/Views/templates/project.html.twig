@@ -2,6 +2,72 @@
 
 {% block title %}{{ project.name }} - Kanban{% endblock %}
 
+{% block head %}
+    <style>
+    .add-column-btn {
+        background: #43e97b;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 1.1rem 1.2rem;
+        font-size: 1rem;
+        cursor: pointer;
+        min-width: 220px;
+        margin-top: 2.2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        transition: background 0.2s;
+    }
+    .add-column-btn:hover {
+        background: #38f9d7;
+        color: #23272f;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0; top: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.3);
+        align-items: center;
+        justify-content: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+        background: #fff;
+        border-radius: 12px;
+        padding: 2rem 2.5rem;
+        min-width: 320px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+        position: relative;
+    }
+    .modal-content h2 { margin-top: 0; }
+    .close-modal {
+        position: absolute;
+        right: 1rem; top: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    .modal-content input {
+        width: 100%;
+        margin-bottom: 1rem;
+        padding: 0.7rem;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        font-size: 1rem;
+    }
+    .modal-content button[type="submit"] {
+        background: #23272f;
+        color: #fff;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+    </style>
+{% endblock %}
+
 {% block content %}
 <div class="asana-layout">
     <aside class="sidebar">
@@ -39,7 +105,32 @@
                     </div>
                 </div>
             {% endfor %}
+            <button class="add-column-btn" id="openAddColumnModal">+ Nouvelle colonne</button>
         </div>
     </section>
 </div>
+
+<div class="modal" id="addColumnModal">
+    <div class="modal-content">
+        <button class="close-modal" id="closeAddColumnModal">&times;</button>
+        <h2>Nouvelle colonne</h2>
+        <form method="post" action="">
+            <input type="text" name="column_title" placeholder="Nom de la colonne" required>
+            <button type="submit">Créer</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const openBtn = document.getElementById('openAddColumnModal');
+        const closeBtn = document.getElementById('closeAddColumnModal');
+        const modal = document.getElementById('addColumnModal');
+        if (openBtn && closeBtn && modal) {
+            openBtn.onclick = () => modal.classList.add('active');
+            closeBtn.onclick = () => modal.classList.remove('active');
+            window.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+        }
+    });
+</script>
 {% endblock %} 

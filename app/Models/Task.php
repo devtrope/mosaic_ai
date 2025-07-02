@@ -28,4 +28,15 @@ class Task
         }
         return $tasks;
     }
+
+    public static function create($columnId, $title, $description)
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('SELECT IFNULL(MAX(position),0)+1 AS pos FROM tasks WHERE column_id = ?');
+        $stmt->execute([$columnId]);
+        $pos = $stmt->fetchColumn();
+        $stmt = $pdo->prepare('INSERT INTO tasks (column_id, title, description, position) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$columnId, $title, $description, $pos]);
+        return $pdo->lastInsertId();
+    }
 } 

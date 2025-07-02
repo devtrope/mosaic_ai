@@ -21,6 +21,22 @@
         background: #38f9d7;
         color: #23272f;
     }
+    .add-task-btn {
+        background: #fff;
+        color: #43e97b;
+        border: 1px solid #43e97b;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.97rem;
+        cursor: pointer;
+        margin-top: 0.7rem;
+        width: 100%;
+        transition: background 0.2s, color 0.2s;
+    }
+    .add-task-btn:hover {
+        background: #43e97b;
+        color: #fff;
+    }
     .modal {
         display: none;
         position: fixed;
@@ -48,7 +64,7 @@
         font-size: 1.5rem;
         cursor: pointer;
     }
-    .modal-content input {
+    .modal-content input, .modal-content textarea {
         width: 100%;
         margin-bottom: 1rem;
         padding: 0.7rem;
@@ -103,6 +119,7 @@
                             </div>
                         {% endfor %}
                     </div>
+                    <button class="add-task-btn" data-column="{{ column.id }}">+ Nouvelle tâche</button>
                 </div>
             {% endfor %}
             <button class="add-column-btn" id="openAddColumnModal">+ Nouvelle colonne</button>
@@ -121,16 +138,54 @@
     </div>
 </div>
 
+{# Modales d'ajout de tâche pour chaque colonne #}
+{% for column in kanban %}
+<div class="modal" id="addTaskModal-{{ column.id }}">
+    <div class="modal-content">
+        <button class="close-modal" data-close-task-modal="{{ column.id }}">&times;</button>
+        <h2>Nouvelle tâche dans "{{ column.title }}"</h2>
+        <form method="post" action="">
+            <input type="hidden" name="task_column_id" value="{{ column.id }}">
+            <input type="text" name="task_title" placeholder="Titre de la tâche" required>
+            <textarea name="task_description" placeholder="Description" rows="3"></textarea>
+            <button type="submit">Créer</button>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const openBtn = document.getElementById('openAddColumnModal');
-        const closeBtn = document.getElementById('closeAddColumnModal');
-        const modal = document.getElementById('addColumnModal');
-        if (openBtn && closeBtn && modal) {
-            openBtn.onclick = () => modal.classList.add('active');
-            closeBtn.onclick = () => modal.classList.remove('active');
-            window.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+        // Modale colonne
+        const openColBtn = document.getElementById('openAddColumnModal');
+        const closeColBtn = document.getElementById('closeAddColumnModal');
+        const colModal = document.getElementById('addColumnModal');
+        if (openColBtn && closeColBtn && colModal) {
+            openColBtn.onclick = () => colModal.classList.add('active');
+            closeColBtn.onclick = () => colModal.classList.remove('active');
+            window.onclick = (e) => { if (e.target === colModal) colModal.classList.remove('active'); };
         }
+        // Modales tâches
+        document.querySelectorAll('.add-task-btn').forEach(btn => {
+            btn.onclick = function() {
+                const colId = btn.getAttribute('data-column');
+                const modal = document.getElementById('addTaskModal-' + colId);
+                if (modal) modal.classList.add('active');
+            };
+        });
+        document.querySelectorAll('.close-modal[data-close-task-modal]').forEach(btn => {
+            btn.onclick = function() {
+                const colId = btn.getAttribute('data-close-task-modal');
+                const modal = document.getElementById('addTaskModal-' + colId);
+                if (modal) modal.classList.remove('active');
+            };
+        });
+        // Fermer modale tâche en cliquant sur le fond
+        document.querySelectorAll('.modal[id^="addTaskModal-"]').forEach(modal => {
+            modal.onclick = function(e) {
+                if (e.target === modal) modal.classList.remove('active');
+            };
+        });
     });
 </script>
 {% endblock %} 

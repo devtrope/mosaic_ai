@@ -93,10 +93,26 @@
         font-size: 1rem;
         cursor: pointer;
     }
+    .task-labels {
+        margin-bottom: 0.5rem;
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+    .task-label {
+        background: #f6d365;
+        color: #23272f;
+        border-radius: 6px;
+        padding: 0.2rem 0.7rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+    }
     </style>
 {% endblock %}
 
 {% block content %}
+{% set static_labels = ['Urgent', 'Bug', 'À valider'] %}
 <div class="asana-layout">
     <aside class="sidebar">
         <div class="sidebar-logo">
@@ -126,6 +142,11 @@
                     <div class="kanban-tasks">
                         {% for task in column.tasks %}
                             <div class="kanban-task" draggable="true" data-task="{{ task.id }}" data-column="{{ column.id }}">
+                                <div class="task-labels">
+                                    {% for label in static_labels %}
+                                        <span class="task-label">{{ label }}</span>
+                                    {% endfor %}
+                                </div>
                                 <strong>{{ task.title }}</strong>
                                 <p>{{ task.description }}</p>
                             </div>
@@ -212,6 +233,40 @@
                 draggedTaskId = null;
                 task.classList.remove('dragging');
             });
+            // Permettre le drop entre tâches
+            task.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                task.classList.add('drop-hover');
+            });
+            task.addEventListener('dragleave', function() {
+                task.classList.remove('drop-hover');
+            });
+            task.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                task.classList.remove('drop-hover');
+                const targetColId = task.getAttribute('data-column');
+                const targetTaskId = task.getAttribute('data-task');
+                const taskId = e.dataTransfer.getData('text/plain');
+                if (taskId && targetColId && targetTaskId && taskId !== targetTaskId) {
+                    fetch('/api/task/move.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ task_id: taskId, column_id: targetColId, before_task_id: targetTaskId })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Insérer la tâche déplacée avant la tâche cible
+                            const taskElem = document.querySelector('.kanban-task[data-task="' + taskId + '"]');
+                            if (taskElem) task.parentNode.insertBefore(taskElem, task);
+                        } else {
+                            alert('Erreur lors du déplacement de la tâche.');
+                        }
+                    })
+                    .catch(() => alert('Erreur lors du déplacement de la tâche.'));
+                }
+            });
         });
         document.querySelectorAll('.kanban-column').forEach(col => {
             col.addEventListener('dragover', function(e) {
@@ -223,11 +278,12 @@
             });
             col.addEventListener('drop', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 col.classList.remove('drop-hover');
                 const taskId = e.dataTransfer.getData('text/plain');
                 if (taskId) {
                     const targetColId = col.getAttribute('data-column');
-                    // Appel AJAX pour déplacer la tâche
+                    // Drop à la fin de la colonne
                     fetch('/api/task/move.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -236,7 +292,7 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            // Déplacer la tâche dans le DOM
+                            // Déplacer la tâche à la fin
                             const taskElem = document.querySelector('.kanban-task[data-task="' + taskId + '"]');
                             if (taskElem) col.querySelector('.kanban-tasks').appendChild(taskElem);
                         } else {

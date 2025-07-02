@@ -14,7 +14,7 @@ class Task
     public static function allByColumn($columnId)
     {
         $pdo = Database::getInstance()->getConnection();
-        $stmt = $pdo->prepare('SELECT * FROM tasks WHERE column_id = ? ORDER BY position, id');
+        $stmt = $pdo->prepare('SELECT * FROM tasks WHERE column_id = ? ORDER BY position ASC, id ASC');
         $stmt->execute([$columnId]);
         $tasks = [];
         foreach ($stmt->fetchAll() as $row) {
